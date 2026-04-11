@@ -1,0 +1,80 @@
+name: Central PR Scanner (CodeQL & Sonar)
+
+on:
+  workflow_dispatch:
+    inputs:
+      projectUrl:
+        description: 'Target Repository URL (e.g., https://github.com/pjalbrz16/blade-runner-server.git)'
+        required: true
+        type: string
+      prId:
+        description: 'Pull Request ID to analyze'
+        required: true
+        type: string
+      backendToken:
+        description: 'Security token for backend'
+        required: true
+        type: string
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Target PR & Generate CSV
+        run: |
+          git clone ${{ inputs.projectUrl }} target-repo
+          cd target-repo
+          
+          # Fetch the specific PR branch and the main branch to find the diff
+          git fetch origin pull/${{ inputs.prId }}/head:pr-branch
+          git fetch origin main:main
+          git checkout pr-branch
+          
+          # Find the impacted files and save them to a text file in the parent directory
+          echo "change_type,file_path" > ../impacted_files.csv
+          git diff --name-only origin/main...pr-branch > ../impacted_files.csv
+          echo "Impacted files CSV generated:"
+          cat ../impacted_files.csv
+
+      - name: Run SonarCloud Scan
+        working-directory: ./target-repo
+        env:
+          # Token saved in worker repo settings
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=my_dashboard_${{ inputs.prId }} \
+            -Dsonar.organization=my_org \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.pullrequest.key=${{ inputs.prId }} \
+            -Dsonar.pullrequest.branch=pr-branch \
+            -Dsonar.pullrequest.base=main
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+          source-root: ./target-repo
+
+      - name: Build Project
+        working-directory: ./target-repo
+        run: mvn clean compile -DskipTests
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:java"
+          # Prevent GitHub from trying to upload results to its own Security tab
+          upload: false
+          output: ../codeql-results
+
+      - name: Webhook to Java Backend
+        run: |
+          # Send the SARIF file and the impacted files list to your Java REST API
+          # Replace 'api.yourdomain.com' with your actual backend URL or Ngrok tunnel
+          curl -X POST ${{ inputs.backendUrl }}/v1/metrics/receive \
+               -H "Authorization: Bearer ${{ inputs.backendToken }}" \
+               -F "prId=${{ inputs.prId }}" \
+               -F "projectUrl=${{ inputs.projectUrl }}" \
+               -F "sarifFile=@../codeql-results/java.sarif" \
+               -F "impactedFiles=@../impacted_files.csv"
