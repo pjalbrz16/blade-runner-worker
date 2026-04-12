@@ -27,7 +27,6 @@ jobs:
           
           # Fetch the specific PR branch and the main branch to find the diff
           git fetch origin pull/${{ inputs.prId }}/head:pr-branch
-          git fetch origin main:main
           git checkout pr-branch
           
           # Find the impacted files and save them to a text file in the parent directory
@@ -35,6 +34,14 @@ jobs:
           git diff --name-only origin/main...pr-branch > ../impacted_files.csv
           echo "Impacted files CSV generated:"
           cat ../impacted_files.csv
+
+      # --- NEW STEP ADDED HERE ---
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven' # Speeds up your build by caching dependencies!
 
       - name: Run SonarCloud Scan
         working-directory: ./target-repo
