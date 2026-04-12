@@ -81,8 +81,8 @@ jobs:
         run: |
           # Send the SARIF file and the impacted files list to your Java REST API
           # Replace 'api.yourdomain.com' with your actual backend URL or Ngrok tunnel
-          curl -X POST ${{ inputs.backendUrl }}/v1/metrics/receive \
-               -H "Authorization: Bearer ${{ secrets.BACKEND_TOKEN }} \
+          curl -X POST ${{ inputs.backendUrl }}/v1/metrics \
+               -H "Authorization: Bearer ${{ secrets.BACKEND_TOKEN }}" \
                -F "prId=${{ inputs.prId }}" \
                -F "projectUrl=${{ inputs.projectUrl }}" \
                -F "sarifFile=@../codeql-results/java.sarif" \
