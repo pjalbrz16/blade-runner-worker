@@ -31,7 +31,7 @@ jobs:
           
           # Find the impacted files and save them to a text file in the parent directory
           echo "change_type,file_path" > ../impacted_files.csv
-          git diff --name-only origin/main...pr-branch > ../impacted_files.csv
+          git diff --name-only origin/main...pr-branch >> ../impacted_files.csv
           echo "Impacted files CSV generated:"
           cat ../impacted_files.csv
 
