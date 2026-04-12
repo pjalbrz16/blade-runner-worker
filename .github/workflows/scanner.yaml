@@ -75,15 +75,18 @@ jobs:
           category: "/language:java"
           # Prevent GitHub from trying to upload results to its own Security tab
           upload: false
-          output: ../codeql-results
+          output: codeql-results
 
       - name: Webhook to Java Backend
         run: |
           # Send the SARIF file and the impacted files list to your Java REST API
           # Replace 'api.yourdomain.com' with your actual backend URL or Ngrok tunnel
+          
+          ls -l -R
+          
           curl -X POST ${{ inputs.backendUrl }}/v1/metrics \
                -H "Authorization: Bearer ${{ secrets.BACKEND_TOKEN }}" \
                -F "prId=${{ inputs.prId }}" \
                -F "projectUrl=${{ inputs.projectUrl }}" \
-               -F "sarifFile=@../codeql-results/java.sarif" \
+               -F "sarifFile=@codeql-results/java.sarif" \
                -F "impactedFiles=@../impacted_files.csv"
