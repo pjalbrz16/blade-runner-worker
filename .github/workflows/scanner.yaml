@@ -52,8 +52,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           mvn sonar:sonar \
-            -Dsonar.projectKey=my_dashboard_${{ inputs.prId }} \
-            -Dsonar.organization=my_org \
+            -Dsonar.projectKey=pjalbrz16_blade-runner-worker \
+            -Dsonar.organization=pjalbrz16 \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.pullrequest.key=${{ inputs.prId }} \
             -Dsonar.pullrequest.branch=pr-branch \
