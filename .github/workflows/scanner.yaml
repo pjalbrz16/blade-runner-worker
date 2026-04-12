@@ -45,6 +45,10 @@ jobs:
           distribution: 'temurin'
           cache: 'maven' # Speeds up your build by caching dependencies!
 
+      - name: Build Project
+        working-directory: ./target-repo
+        run: mvn clean compile -DskipTests
+
       - name: Run SonarCloud Scan
         working-directory: ./target-repo
         env:
@@ -59,15 +63,12 @@ jobs:
             -Dsonar.pullrequest.branch=pr-branch \
             -Dsonar.pullrequest.base=main
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: java
-          source-root: ./target-repo
+#      - name: Initialize CodeQL
+#        uses: github/codeql-action/init@v3
+#        with:
+#          languages: java
+#          source-root: ./target-repo
 
-      - name: Build Project
-        working-directory: ./target-repo
-        run: mvn clean compile -DskipTests
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
