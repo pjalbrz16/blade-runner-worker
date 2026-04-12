@@ -25,13 +25,15 @@ jobs:
           git clone ${{ inputs.projectUrl }} target-repo
           cd target-repo
           
-          # Fetch the specific PR branch and the main branch to find the diff
+          # Fetch the specific PR branch and the default branch to find the diff
+          
+          DEFAULT_BRANCH=$(git branch --show-current)
           git fetch origin pull/${{ inputs.prId }}/head:pr-branch
           git checkout pr-branch
           
           # Find the impacted files and save them to a text file in the parent directory
           echo "change_type,file_path" > ../impacted_files.csv
-          git diff --name-only origin/main...pr-branch >> ../impacted_files.csv
+          git diff --name-only origin/$DEFAULT_BRANCH...pr-branch >> ../impacted_files.csv
           echo "Impacted files CSV generated:"
           cat ../impacted_files.csv
 
