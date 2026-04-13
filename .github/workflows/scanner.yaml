@@ -87,9 +87,9 @@ jobs:
             -Dsonar.projectKeyp=pjalbrz16_github-worker-action
             -Dsonar.organization=pjalbrz16
             -Dsonar.java.binaries=.
-            -Dsonar.pullrequest.key=${{ inputs.prId }}
-            -Dsonar.pullrequest.branch=pr-branch
-            -Dsonar.pullrequest.base=main
+#            -Dsonar.pullrequest.key=${{ inputs.prId }}
+#            -Dsonar.pullrequest.branch=pr-branch
+#            -Dsonar.pullrequest.base=main
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
