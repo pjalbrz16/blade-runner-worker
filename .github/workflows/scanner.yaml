@@ -60,21 +60,6 @@ jobs:
         working-directory: ./target-repo
         run: mvn clean install -DskipTests
 
-
-#      - name: Run SonarCloud Scan
-#        working-directory: ./target-repo
-#        env:
-#          # Token saved in worker repo settings
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#        run: |
-#          mvn sonar:sonar \
-#            -Dsonar.projectKey=pjalbrz16_github-worker-action \
-#            -Dsonar.organization=pjalbrz16 \
-#            -Dsonar.host.url=https://sonarcloud.io \
-#            -Dsonar.pullrequest.key=${{ inputs.prId }} \
-#            -Dsonar.pullrequest.branch=pr-branch \
-#            -Dsonar.pullrequest.base=main
-
       - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
@@ -86,9 +71,6 @@ jobs:
             -Dsonar.projectKey=pjalbrz16_github-worker-action
             -Dsonar.organization=pjalbrz16
             -Dsonar.java.binaries=.
-#            -Dsonar.pullrequest.key=${{ inputs.prId }}
-#            -Dsonar.pullrequest.branch=pr-branch
-#            -Dsonar.pullrequest.base=main
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
@@ -98,19 +80,18 @@ jobs:
           upload-database: false
           output: codeql-results
 
+      - name: Generate Call Graph CSV (Custom Query)
+        env:
+          CODEQL_DB_PATH: "${{ runner.temp }}/codeql_databases/java"
+        run : .github/scripts/generate-call-graph.sh
+
+
       - name: Webhook to Java Backend
-        run: |
-          # Send the SARIF file and the impacted files list to your Java REST API
-          # Replace 'api.yourdomain.com' with your actual backend URL or Ngrok tunnel
-          pwd
-          
-          ls -la codeql-results/
-          
-          cat impacted_files.csv
-          
+        run: |          
           curl -v -X POST "${{ inputs.backendUrl }}/metrics" \
                -H "Authorization: Bearer ${{ secrets.BACKEND_TOKEN }}" \
                -F "prId=${{ inputs.prId }}" \
                -F "projectUrl=${{ inputs.projectUrl }}" \
                -F "sarifFile=@codeql-results/java.sarif" \
                -F "impactedFiles=@impacted_files.csv"
+               -F "callGraphCsv=@call_graph.csv"
