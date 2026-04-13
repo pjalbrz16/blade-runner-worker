@@ -29,16 +29,16 @@ select
 EOF
 
 echo "Installing CodeQL dependencies"
-codeql pack install
+"$CODEQL_CLI" pack install
 
 # Use the DB_PATH passed in from the GitHub Actions environment
 echo "Running query against database at: $CODEQL_DB_PATH"
-codeql query run --database=$CODEQL_DB_PATH --output=../results.bqrs call_graph.ql
+"$CODEQL_CLI" query run --database=$CODEQL_DB_PATH --output=../results.bqrs call_graph.ql
 
 cd ..
 
 echo "Decoding results to CSV"
-codeql bqrs decode results.bqrs --format=csv --output=call_graph.csv
+"$CODEQL_CLI" bqrs decode results.bqrs --format=csv --output=call_graph.csv
 
 
 echo "Filtering call graph to include only impacted files"

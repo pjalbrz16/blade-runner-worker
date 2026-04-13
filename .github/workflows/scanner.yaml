@@ -48,6 +48,7 @@ jobs:
           cache: 'maven' # Speeds up your build by caching dependencies!
 
       - name: Initialize CodeQL
+        id: init
         uses: github/codeql-action/init@v3
         with:
           languages: java
@@ -86,6 +87,7 @@ jobs:
       - name: Generate Call Graph CSV (Custom Query)
         env:
           CODEQL_DB_PATH: "${{ runner.temp }}/codeql_databases/java"
+          CODEQL_CLI: "${{ steps.init.outputs.codeql-path }}"
         run : .github/scripts/generate_call_graph.sh
 
 
