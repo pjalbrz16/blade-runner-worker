@@ -83,7 +83,7 @@ jobs:
         with:
           projectBaseDir: ./target-repo
           args: >
-            -Dsonar.projectKeyp=pjalbrz16_github-worker-action
+            -Dsonar.projectKey=pjalbrz16_github-worker-action
             -Dsonar.organization=pjalbrz16
             -Dsonar.java.binaries=.
 #            -Dsonar.pullrequest.key=${{ inputs.prId }}
