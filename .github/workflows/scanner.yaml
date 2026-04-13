@@ -37,13 +37,12 @@ jobs:
           echo "Impacted files CSV generated:"
           cat ../impacted_files.csv
 
-      # --- NEW STEP ADDED HERE ---
-#      - name: Set up JDK 17
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: '17'
-#          distribution: 'temurin'
-#          cache: 'maven' # Speeds up your build by caching dependencies!
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven' # Speeds up your build by caching dependencies!
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -51,15 +50,15 @@ jobs:
           languages: java
           source-root: ./target-repo
 
-      - name: Autobuild Project
-        uses: github/codeql-action/autobuild@v3
-        env:
-          # Tell autobuild where the code is
-          GITHUB_WORKSPACE: ${{ github.workspace }}/target-repo
+#      - name: Autobuild Project
+#        uses: github/codeql-action/autobuild@v3
+#        env:
+#          # Tell autobuild where the code is
+#          GITHUB_WORKSPACE: ${{ github.workspace }}/target-repo
 
-#      - name: Build Project
-#        working-directory: ./target-repo
-#        run: mvn clean install -DskipTests
+      - name: Build Project
+        working-directory: ./target-repo
+        run: mvn clean install -DskipTests
 
 
 #      - name: Run SonarCloud Scan
