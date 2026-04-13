@@ -38,12 +38,12 @@ jobs:
           cat ../impacted_files.csv
 
       # --- NEW STEP ADDED HERE ---
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven' # Speeds up your build by caching dependencies!
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#          cache: 'maven' # Speeds up your build by caching dependencies!
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -51,30 +51,52 @@ jobs:
           languages: java
           source-root: ./target-repo
 
-      - name: Build Project
-        working-directory: ./target-repo
-        run: mvn clean install -DskipTests
+      - name: Autobuild Project
+        uses: github/codeql-action/autobuild@v3
+        env:
+          # Tell autobuild where the code is
+          GITHUB_WORKSPACE: ${{ github.workspace }}/target-repo
+
+#      - name: Build Project
+#        working-directory: ./target-repo
+#        run: mvn clean install -DskipTests
+
+
+#      - name: Run SonarCloud Scan
+#        working-directory: ./target-repo
+#        env:
+#          # Token saved in worker repo settings
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#        run: |
+#          mvn sonar:sonar \
+#            -Dsonar.projectKey=pjalbrz16_github-worker-action \
+#            -Dsonar.organization=pjalbrz16 \
+#            -Dsonar.host.url=https://sonarcloud.io \
+#            -Dsonar.pullrequest.key=${{ inputs.prId }} \
+#            -Dsonar.pullrequest.branch=pr-branch \
+#            -Dsonar.pullrequest.base=main
 
       - name: Run SonarCloud Scan
-        working-directory: ./target-repo
+        uses: SonarSource/sonarcloud-github-action@master
         env:
-          # Token saved in worker repo settings
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          mvn sonar:sonar \
-            -Dsonar.projectKey=pjalbrz16_github-worker-action \
-            -Dsonar.organization=pjalbrz16 \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.pullrequest.key=${{ inputs.prId }} \
-            -Dsonar.pullrequest.branch=pr-branch \
+        with:
+          projectBaseDir: ./target-repo
+          args: >
+            -Dsonar.projectKeyp=pjalbrz16_github-worker-action
+            -Dsonar.organization=pjalbrz16
+            -Dsonar.java.binaries=.
+            -Dsonar.pullrequest.key=${{ inputs.prId }}
+            -Dsonar.pullrequest.branch=pr-branch
             -Dsonar.pullrequest.base=main
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:java"
-          # Prevent GitHub from trying to upload results to its own Security tab
           upload: false
+          upload-database: false
           output: codeql-results
 
       - name: Webhook to Java Backend
@@ -87,7 +109,7 @@ jobs:
           
           cat impacted_files.csv
           
-          curl -X POST ${{ inputs.backendUrl }}/metrics \
+          curl -v -X POST "${{ inputs.backendUrl }}/metrics" \
                -H "Authorization: Bearer ${{ secrets.BACKEND_TOKEN }}" \
                -F "prId=${{ inputs.prId }}" \
                -F "projectUrl=${{ inputs.projectUrl }}" \
