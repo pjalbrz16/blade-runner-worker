@@ -20,6 +20,9 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Worker Repo
+        uses: actions/checkout@v4
+
       - name: Checkout Target PR & Generate CSV
         run: |
           git clone ${{ inputs.projectUrl }} target-repo
@@ -83,7 +86,7 @@ jobs:
       - name: Generate Call Graph CSV (Custom Query)
         env:
           CODEQL_DB_PATH: "${{ runner.temp }}/codeql_databases/java"
-        run : .github/scripts/generate-call-graph.sh
+        run : .github/scripts/generate_call_graph.sh
 
 
       - name: Webhook to Java Backend
@@ -93,5 +96,5 @@ jobs:
                -F "prId=${{ inputs.prId }}" \
                -F "projectUrl=${{ inputs.projectUrl }}" \
                -F "sarifFile=@codeql-results/java.sarif" \
-               -F "impactedFiles=@impacted_files.csv"
+               -F "impactedFiles=@impacted_files.csv" \
                -F "callGraphCsv=@call_graph.csv"
