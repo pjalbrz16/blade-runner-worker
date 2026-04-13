@@ -87,7 +87,7 @@ jobs:
           
           cat impacted_files.csv
           
-          curl -X POST ${{ inputs.backendUrl }}/v1/metrics \
+          curl -X POST ${{ inputs.backendUrl }}/metrics \
                -H "Authorization: Bearer ${{ secrets.BACKEND_TOKEN }}" \
                -F "prId=${{ inputs.prId }}" \
                -F "projectUrl=${{ inputs.projectUrl }}" \
