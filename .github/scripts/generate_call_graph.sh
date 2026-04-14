@@ -49,7 +49,8 @@ python3 -c "
 import csv
 import os
 
-impacted_files = set()
+impacted_files = []
+
 # Read the impacted_files.csv generated in the pipeline
 if os.path.exists('impacted_files.csv'):
     with open('impacted_files.csv', 'r') as f:
@@ -58,26 +59,34 @@ if os.path.exists('impacted_files.csv'):
         for row in reader:
             if len(row) > 1:
                 # Add the file path to our set
-                impacted_files.add(row[1].strip().lstrip('/'))
+                impacted_files.append(row[1].strip())
 
 # Filter the CodeQL output
-with open('full_call_graph.csv', 'r') as f_in, open('call_graph.csv', 'w') as f_out:
+with open('full_call_graph.csv', 'r') as f_in, open('call_graph.csv', 'w', newline='') as f_out:
     reader = csv.reader(f_in)
     writer = csv.writer(f_out)
-    next(reader, None) # skip CodeQL header
+    next(reader, None) # Skip the raw CodeQL header
 
-    # Write final header
+    # Write the final cleaned header expected by your Java Backend
     writer.writerow(['Caller', 'Callee'])
 
-    # If the caller OR the callee is in the impacted files list, keep the dependency
     for row in reader:
+        # Ensure we have all 4 columns from the CodeQL query
         if len(row) == 4:
-            caller_path, caller, callee_path, callee = row
+            c_path = row[0].strip().strip('"')
+            caller = row[1].strip().strip('"')
+            cal_path = row[2].strip().strip('"')
+            callee = row[3].strip().strip('"')
 
-            norm_caller_path = caller_path.strip().lstrip('/')
-            norm_callee_path = callee_path.strip().lstrip('/')
+            is_impacted = False
+            for imp in impacted_files:
 
-            if norm_caller_path in impacted_files or norm_callee_path in impacted_files:
+                if c_path.endswith(imp) or imp.endswith(c_path) or cal_path.endswith(imp) or imp.endswith(cal_path):
+                    is_impacted = True
+                    break
+
+            # If the dependency touches an impacted file, save it to the final CSV
+            if is_impacted:
                 writer.writerow([caller, callee])
 "
 
