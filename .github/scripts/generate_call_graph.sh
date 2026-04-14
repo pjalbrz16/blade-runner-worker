@@ -51,15 +51,18 @@ import os
 
 impacted_files = []
 
-# Read the impacted_files.csv generated in the pipeline
+# Read the impacted_files.csv safely
 if os.path.exists('impacted_files.csv'):
     with open('impacted_files.csv', 'r') as f:
         reader = csv.reader(f)
-        next(reader, None) # skip header
+        next(reader, None) # Skip the header
         for row in reader:
-            if len(row) > 1:
-                # Add the file path to our set
-                impacted_files.append(row[1].strip())
+            if row: # If the row isn't empty
+                # Using row[-1] safely grabs the path whether there are commas or not
+                path = row[-1].strip()
+                if path:
+                    impacted_files.append(path)
+
 
 # Filter the CodeQL output
 with open('full_call_graph.csv', 'r') as f_in, open('call_graph.csv', 'w', newline='') as f_out:
@@ -67,31 +70,28 @@ with open('full_call_graph.csv', 'r') as f_in, open('call_graph.csv', 'w', newli
     writer = csv.writer(f_out)
     next(reader, None) # Skip the raw CodeQL header
 
-    # Write the final cleaned header expected by your Java Backend
     writer.writerow(['Caller', 'Callee'])
 
+    match_count = 0
+
     for row in reader:
-        # Ensure we have all 4 columns from the CodeQL query
         if len(row) == 4:
-            c_path = row[0].strip().strip('"')
-            caller = row[1].strip().strip('"')
-            cal_path = row[2].strip().strip('"')
-            callee = row[3].strip().strip('"')
+            c_path = row[0].strip()
+            caller = row[1].strip()
+            cal_path = row[2].strip()
+            callee = row[3].strip()
 
             is_impacted = False
             for imp in impacted_files:
-
                 if c_path.endswith(imp) or imp.endswith(c_path) or cal_path.endswith(imp) or imp.endswith(cal_path):
                     is_impacted = True
                     break
 
-            # If the dependency touches an impacted file, save it to the final CSV
             if is_impacted:
                 writer.writerow([caller, callee])
+                match_count += 1
+
 "
 
 echo "Call graph CSV successfully generated! Preview:"
-head -n 50 call_graph.csv
-
-echo "full call graph "
-head -n 100 full_call_graph.csv
+head -n 5 call_graph.csv
