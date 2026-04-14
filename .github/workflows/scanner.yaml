@@ -99,5 +99,5 @@ jobs:
                -F "projectUrl=${{ inputs.projectUrl }}" \
                -F "sarifFile=@codeql-results/java.sarif" \
                -F "impactedFiles=@impacted_files.csv" \
-               -F "callGraphCsv=@call_graph.csv"
+               -F "callGraphCsv=@call_graph.csv" \
                -F "fullCallGraph=@full_call_graph.csv"

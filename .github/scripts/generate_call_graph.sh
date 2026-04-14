@@ -82,4 +82,7 @@ with open('full_call_graph.csv', 'r') as f_in, open('call_graph.csv', 'w') as f_
 "
 
 echo "Call graph CSV successfully generated! Preview:"
-head -n 5 call_graph.csv
+head -n 50 call_graph.csv
+
+echo "full call graph "
+head -n 100 full_call_graph.csv
