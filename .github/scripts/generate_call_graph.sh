@@ -77,7 +77,7 @@ with open('full_call_graph.csv', 'r') as f_in, open('call_graph.csv', 'w') as f_
             norm_caller_path = caller_path.strip().lstrip('/')
             norm_callee_path = callee_path.strip().lstrip('/')
 
-            if caller_path in impacted_files or callee_path in impacted_files:
+            if norm_caller_path in impacted_files or norm_callee_path in impacted_files:
                 writer.writerow([caller, callee])
 "
 

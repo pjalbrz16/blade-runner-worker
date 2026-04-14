@@ -100,4 +100,4 @@ jobs:
                -F "sarifFile=@codeql-results/java.sarif" \
                -F "impactedFiles=@impacted_files.csv" \
                -F "callGraphCsv=@call_graph.csv"
-               -F "fullCallGraph=@fullCallGraph.csv"
+               -F "fullCallGraph=@full_call_graph.csv"
