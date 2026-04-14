@@ -22,10 +22,12 @@ import java
 
 from Callable caller, Callable callee
 where caller.polyCalls(callee)
-and not callee.getCompilationUnit().isFromSource() = false
+  and callee.fromSource()
 select
-  caller.getDeclaringType().getQualifiedName() + "." + caller.getName() as Caller,
-  callee.getDeclaringType().getQualifiedName() + "." + callee.getName() as Callee
+  caller.getFile().getRelativePath() as caller_path,
+  caller.getDeclaringType().getQualifiedName() + "." + caller.getName() as caller_name,
+  callee.getFile().getRelativePath() as callee_path,
+  callee.getDeclaringType().getQualifiedName() + "." + callee.getName() as callee_name
 EOF
 
 echo "Installing CodeQL dependencies"
@@ -38,7 +40,7 @@ echo "Running query against database at: $CODEQL_DB_PATH"
 cd ..
 
 echo "Decoding results to CSV"
-"$CODEQL_CLI" bqrs decode results.bqrs --format=csv --output=call_graph.csv
+"$CODEQL_CLI" bqrs decode results.bqrs --format=csv --output=full_call_graph.csv
 
 
 echo "Filtering call graph to include only impacted files"
