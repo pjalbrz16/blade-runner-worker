@@ -58,7 +58,7 @@ if os.path.exists('impacted_files.csv'):
         for row in reader:
             if len(row) > 1:
                 # Add the file path to our set
-                impacted_files.add(row[1])
+                impacted_files.add(row[1].strip().lstrip('/'))
 
 # Filter the CodeQL output
 with open('full_call_graph.csv', 'r') as f_in, open('call_graph.csv', 'w') as f_out:
@@ -73,6 +73,10 @@ with open('full_call_graph.csv', 'r') as f_in, open('call_graph.csv', 'w') as f_
     for row in reader:
         if len(row) == 4:
             caller_path, caller, callee_path, callee = row
+
+            norm_caller_path = caller_path.strip().lstrip('/')
+            norm_callee_path = callee_path.strip().lstrip('/')
+
             if caller_path in impacted_files or callee_path in impacted_files:
                 writer.writerow([caller, callee])
 "
