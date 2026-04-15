@@ -20,11 +20,13 @@ cat << 'EOF' > call_graph.ql
  */
 import java
 
-from Callable caller, Callable callee
-where caller.polyCalls(callee)
+from Call call, Callable caller, Callable callee
+where
+  call.getEnclosingCallable() = caller
+  and call.getCallee() = callee
   and callee.fromSource()
 select
-call.getFile().getRelativePath() as caller_path,
+  call.getFile().getRelativePath() as caller_path,
   caller.getDeclaringType().getQualifiedName() + "." + caller.getName() as caller_name,
   call.getLocation().getStartLine() as call_line,
   callee.getFile().getRelativePath() as callee_path,
